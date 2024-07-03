@@ -4,7 +4,7 @@
 export TRELLO_API_KEY=
 export TRELLO_RUBY_TOKEN=
 export TRELLO_BOARDS='comma', 'delimited', 'list', 'in single quotes'
-export TRELLO_MEMBERS=
+export TRELLO_MEMBER=
 ```
 
 # Set up
