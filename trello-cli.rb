@@ -13,7 +13,9 @@ end
 
 def get_cards(for_member_id:, board_id:)
   Trello::Board.find(board_id).cards.select do |card|
-    card.member_ids.include?(for_member_id) && (!card.due_complete && card.list.name.downcase != 'done')
+    card.member_ids.include?(for_member_id) && !card.due_complete &&
+      card.list.name.downcase != 'done' &&
+      card.list.name.downcase != '🎉 done'
   end
 end
 
