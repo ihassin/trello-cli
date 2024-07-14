@@ -4,6 +4,7 @@
 require 'trello'
 require 'colorize'
 require_relative './lib/priority'
+require_relative './lib/member_cards'
 
 Trello.configure do |config|
   config.developer_public_key = ENV['TRELLO_API_KEY']
@@ -11,23 +12,15 @@ Trello.configure do |config|
   config.http_client = 'faraday'
 end
 
-def get_cards(for_member_id:, board_id:)
-  Trello::Board.find(board_id).cards.select do |card|
-    card.member_ids.include?(for_member_id) && !card.due_complete &&
-      card.list.name.downcase != 'done' &&
-      card.list.name.downcase != '🎉 done'
-  end
-end
-
 def get_priority(item, priority_fields)
   priority_field = priority_fields.select { |p| p['id'] == item.option_id }
   priority_field[0]['value']['text']
 end
 
-def create_card_list(cards:, priority_field_id:)
+def create_card_list(trello_custom_field, cards:, priority_field_id:)
   card_list = []
 
-  priority_options = Trello::CustomField.find(priority_field_id).checkbox_options
+  priority_options = trello_custom_field.find(priority_field_id).checkbox_options
 
   cards.each do |card|
     priority_value = Priority::NO_PRIORITY
@@ -62,35 +55,38 @@ def display_cards(card_list:, board_name:)
   end
 end
 
-def list_tasks(member:, board_name:, board_id:)
-  return unless (cards = get_cards(for_member_id: member.id, board_id: board_id))
+def list_tasks(trello_board:, trello_custom_field:, member:, board_name:, board_id:)
+  return unless (cards = MemberCards.get_cards(trello_board: trello_board, for_member_id: member.id, board_id: board_id))
   return if cards.empty?
 
-  board = Trello::Board.find(board_id)
+  board = trello_board.find(board_id)
   priority_field = board.custom_fields.select { |field| field.name.downcase == 'priority' }
   priority_field_id = (priority_field[0].id if priority_field.length.positive?)
-  card_list = create_card_list(cards: cards, priority_field_id: priority_field_id)
+  card_list = create_card_list(trello_custom_field, cards: cards, priority_field_id: priority_field_id)
   display_cards(card_list: card_list, board_name: board_name)
 end
 
-def find_member(member_name:)
-  Trello::Member.find(member_name)
+def find_member(trello_member:, member_name:)
+  trello_member.find(member_name)
 rescue StandardError
   nil
 end
 
-def list_assigned_tasks(member_name:)
-  all_boards = Trello::Board.all
+def list_assigned_tasks(trello_board:, trello_member:, trello_custom_field:, member_name:)
+  all_boards = trello_board.all
   matching_boards = all_boards.select { |element| ENV['TRELLO_BOARDS'].include?(element.name) }
 
-  member = find_member(member_name: member_name)
+  member = find_member(trello_member: trello_member, member_name: member_name)
   return if member.nil?
 
   matching_boards.each do |board|
-    list_tasks(member: member, board_id: board.id, board_name: board.name)
+    list_tasks(trello_board: trello_board, trello_custom_field: trello_custom_field, member: member, board_id: board.id, board_name: board.name)
   end
 end
 
 member_name = ARGV[0] || ENV['TRELLO_MEMBER']
 puts "Drumroll for #{member_name}..."
-list_assigned_tasks(member_name: member_name)
+list_assigned_tasks(trello_board: Trello::Board,
+                    trello_member: Trello::Member,
+                    trello_custom_field: Trello::CustomField,
+                    member_name: member_name)
