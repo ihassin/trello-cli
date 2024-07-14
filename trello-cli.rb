@@ -3,30 +3,12 @@
 
 require 'trello'
 require 'colorize'
-
-NO_PRIORITY = 'Missing'
+require_relative './lib/priority'
 
 Trello.configure do |config|
   config.developer_public_key = ENV['TRELLO_API_KEY']
   config.member_token = ENV['TRELLO_RUBY_TOKEN']
   config.http_client = 'faraday'
-end
-
-def priorities
-  [
-    ['Highest', 1],
-    ['High', 2],
-    ['Medium', 3],
-    ['Low', 4],
-    ['Lowest', 5],
-    ['Unsure', 6],
-    ['Missing', 7],
-    [NO_PRIORITY, 8]
-  ]
-end
-
-def priority_map(tag:)
-  priorities.select { |f| f[0] == tag }
 end
 
 def get_cards(for_member_id:, board_id:)
@@ -46,7 +28,7 @@ def create_card_list(cards:, priority_field_id:)
   priority_options = Trello::CustomField.find(priority_field_id).checkbox_options
 
   cards.each do |card|
-    priority_value = NO_PRIORITY
+    priority_value = Priority::NO_PRIORITY
     card.custom_field_items.each do |item|
       priority_value = get_priority(item, priority_options) if item.custom_field_id == priority_field_id
     end
@@ -55,7 +37,7 @@ def create_card_list(cards:, priority_field_id:)
   end
   return if card_list.empty?
 
-  card_list.sort_by { |element| priority_map(tag: element[2])[0][1] }
+  card_list.sort_by { |element| Priority.priority_map(tag: element[2])[0][1] }
 end
 
 def display_cards(card_list:, board_name:)

@@ -116,7 +116,7 @@ DEPENDENCIES
   highline
   httparty
   nokogiri
-  rspec (~> 3.9)
+  rspec
   rubocop
   ruby-trello (~> 4.0)
 
