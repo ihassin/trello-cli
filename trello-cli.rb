@@ -16,8 +16,6 @@ member = Member.new(trello_member: Trello::Member)
 wanted_member = member.find_member(member_name: member_name)
 return if wanted_member.nil?
 
-puts "Drumroll for #{member_name}..."
-
 boards = Board.get_boards(trello_board: Trello::Board, board_list: ENV['TRELLO_BOARDS'])
 
 boards.each do |board|
