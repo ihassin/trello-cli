@@ -11,19 +11,15 @@ Trello.configure do |config|
   config.http_client = 'faraday'
 end
 
-member_name = ARGV[0] || ENV['TRELLO_MEMBER']
 member = Member.new(trello_member: Trello::Member)
+member_name = ARGV[0] || ENV['TRELLO_MEMBER']
 wanted_member = member.find_member(member_name: member_name)
 return if wanted_member.nil?
 
-boards = Board.get_boards(trello_board: Trello::Board, board_list: ENV['TRELLO_BOARDS'])
+board = Board.new(trello_board: Trello::Board)
+boards = board.get_boards(board_list: ENV['TRELLO_BOARDS'])
 
-boards.each do |board|
-  card_list = member.get_assigned_tasks(trello_board: Trello::Board,
-                                        # trello_member: Trello::Member,
-                                        trello_custom_field: Trello::CustomField,
-                                        for_board: board)
-  card_list = card_list&.sort_by { |element| Priority.priority_map(tag: element[2])[0][1] }
-
-  Display.display_cards(card_list: card_list, board_name: board.name)
+boards.each do |their_board|
+  card_list = board.get_cards_for_member_by_board(board: their_board, member: member)
+  Display.display_cards(card_list: card_list, board_name: their_board.name)
 end
