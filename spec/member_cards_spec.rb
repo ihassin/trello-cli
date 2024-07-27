@@ -11,7 +11,7 @@ RSpec.describe 'Get Member cards API' do
   let(:mock_member) { double(Trello::Member, username: 'member', id: 1) }
 
   before do
-    @member = Member.new(member_name: 'ita')
+    @member = Member.new(trello_member: mock_member)
     allow(mock_board).to receive(:find).with('12345').and_return(mock_board)
 
     allow(mock_card).to receive(:member_ids).with(any_args).and_return([mock_member.id])
