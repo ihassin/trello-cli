@@ -1,6 +1,6 @@
 require 'trello'
 require 'spec_helper'
-require_relative '../lib/member_cards'
+require_relative '../lib/member'
 
 RSpec.describe 'Get Member cards API' do
   let(:mock_card) { instance_double(Trello::Card, name: 'Test Card', list: mock_list) }
@@ -11,6 +11,7 @@ RSpec.describe 'Get Member cards API' do
   let(:mock_member) { double(Trello::Member, username: 'member', id: 1) }
 
   before do
+    @member = Member.new(member_name: 'ita')
     allow(mock_board).to receive(:find).with('12345').and_return(mock_board)
 
     allow(mock_card).to receive(:member_ids).with(any_args).and_return([mock_member.id])
@@ -18,29 +19,27 @@ RSpec.describe 'Get Member cards API' do
   end
 
   it 'Returns an empty list of cards given all are in the done column' do
-    cards = MemberCards.get_cards(trello_board: mock_board, for_member_id: mock_member.id, board_id: mock_board.id)
+    cards = @member.get_cards(trello_board: mock_board, for_member_id: mock_member.id, board_id: mock_board.id)
     expect(cards).to be_empty
   end
 
   it 'Returns false for a card that is done' do
-    in_progress = MemberCards.in_progress?(participants: [1], completed: true, list_name: 'Done', for_member_id: 1)
+    in_progress = @member.in_progress?(completed: true, list_name: 'Done')
     expect(in_progress).to be false
   end
 
   it 'Returns false for a card that is for someone else' do
-    in_progress = MemberCards.in_progress?(participants: [2], completed: true, list_name: 'Done', for_member_id: 1)
+    in_progress = @member.in_progress?(completed: true, list_name: 'Done')
     expect(in_progress).to be false
   end
 
   it 'Returns false for a card that is in a list with a variation of the name done' do
-    in_progress = MemberCards.in_progress?(participants: [1], completed: true, list_name: 'Nearly rDone',
-                                           for_member_id: 1)
+    in_progress = @member.in_progress?(completed: true, list_name: 'Nearly rDone')
     expect(in_progress).to be false
   end
 
   it 'Returns true for a card that is not completed' do
-    in_progress = MemberCards.in_progress?(participants: [1], completed: false, list_name: 'In progress',
-                                           for_member_id: 1)
+    in_progress = @member.in_progress?(completed: false, list_name: 'In progress')
     expect(in_progress).to be true
   end
 
