@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'athens'
 gem 'colorize'
+gem 'dotenv'
 gem 'faraday'
 gem 'highline'
 gem 'httparty'

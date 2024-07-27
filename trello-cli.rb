@@ -5,6 +5,9 @@ require 'trello'
 require_relative './lib/member'
 require_relative './lib/board'
 
+require 'dotenv'
+Dotenv.load
+
 Trello.configure do |config|
   config.developer_public_key = ENV['TRELLO_API_KEY']
   config.member_token = ENV['TRELLO_RUBY_TOKEN']
