@@ -4,8 +4,8 @@ class Priority
   NO_PRIORITY = 'Missing'
 
   def self.get_priority_field_id_for_board(board:)
-    priority_field = board.custom_fields.select { |field| field.name.downcase == 'priority' }
-    (priority_field[0].id if priority_field.length.positive?)
+    priority_field = board.custom_fields.find { |field| field.name.casecmp('priority').zero? }
+    priority_field&.id
   end
   def self.priority_map(tag:)
     priorities.select { |priority_name| priority_name[0] == tag }
@@ -25,7 +25,7 @@ class Priority
   end
 
   def self.get_priority(item, priority_fields)
-    priority_field = priority_fields.select { |p| p['id'] == item.option_id }
-    priority_field[0]['value']['text']
+    priority_field = priority_fields.find { |p| p['id'] == item.option_id }
+    priority_field&.dig('value', 'text')
   end
 end
