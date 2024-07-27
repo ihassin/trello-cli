@@ -12,5 +12,6 @@ class Display
 
       puts "#{due.red}\t#{priority}\t\t#{card[0].blue}\t#{card[4]}\t#{card[1].green}"
     end
+    puts
   end
 end
