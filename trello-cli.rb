@@ -22,5 +22,6 @@ boards = board.get_boards(board_list: ENV['TRELLO_BOARDS'])
 
 boards.each do |their_board|
   card_list = board.get_tasks_for_member_by_board(board: their_board, member: member)
+  card_list = card_list&.sort_by { |element| Priority.priority_map(tag: element[2])[0][1] }
   Display.display_cards(card_list: card_list, board_name: their_board.name)
 end

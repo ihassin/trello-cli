@@ -14,7 +14,5 @@ class Board
                                           trello_custom_field: Trello::CustomField,
                                           for_board: board)
 
-    card_list&.sort_by { |element| Priority.priority_map(tag: element[2])[0][1] }
-
   end
 end
